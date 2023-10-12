@@ -15,4 +15,5 @@ You can activate this plugin within Obsidian by doing the following:
 - Click Browse community plugins
 - Search for "Favorite Note"
 - Click Install
-- Once installed, close the community plugins window and activate the newly installed plugin
+- Once installed, close the community plugins window and activate the "Favorite Note" plugin
+- Now you will see a heart icon if you hover to a note from the list
