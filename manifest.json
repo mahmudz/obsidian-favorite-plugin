@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-favorite-plugin",
 	"name": "Favorite Note",
-	"version": "1.0.3",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Mark your note as favorite.",
 	"author": "mahmudz",
