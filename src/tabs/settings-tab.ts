@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import FavoritePlugin from "main";
+import FavoritePlugin from "../main";
 import { ChooseFromIconList } from "src/modals/choose-icon-modal";
+import { SETTINGS_ICON_BTN_ID } from "src/constants";
 
 export default class FavoritePluginSettingsTab extends PluginSettingTab {
 	plugin: FavoritePlugin;
@@ -30,7 +31,7 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 
 				this.plugin.saveSettings();
 			})
-			.controlEl.children[0].addClass("fv-select-icon-btn");
+			.controlEl.children[0].setAttr("id", SETTINGS_ICON_BTN_ID);
 
 		const donationDiv = containerEl.createEl("div", {
 			cls: "donate-section",

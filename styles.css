@@ -16,10 +16,16 @@ If your plugin does not need CSS, delete this file.
 .fav-btn {
 	visibility: hidden;
 	cursor: pointer;
+	display: flex;
 }
 
 .fav-btn:hover {
 	color: #9f9f9f;
+}
+
+.fav-btn svg.svg-icon {
+	height: 16px;
+	width: 16px;
 }
 
 .nav-file:hover .fav-btn {

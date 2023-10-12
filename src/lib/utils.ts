@@ -23,3 +23,20 @@ export function checkHtml(htmlStr: string) {
 
 	return reg.test(htmlStr);
 }
+
+export function recreateNode(el: HTMLElement, withChildren = false) {
+	if (withChildren) {
+		const parentNode = el.parentNode as HTMLDivElement;
+
+		parentNode.replaceChild(el.cloneNode(true), el);
+	} else {
+		const newEl = el.cloneNode(false);
+
+		while (el.hasChildNodes())
+			newEl.appendChild(el.firstChild as HTMLElement);
+
+		const parentNode = el.parentNode as HTMLElement;
+
+		parentNode.replaceChild(newEl, el);
+	}
+}

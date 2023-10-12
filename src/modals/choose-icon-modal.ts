@@ -1,6 +1,7 @@
 import { FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
 import { appIcons } from "./app-icons";
-import FavoritePlugin from "main";
+import { SETTINGS_ICON_BTN_ID } from "../constants";
+import FavoritePlugin from "../main";
 
 export class ChooseFromIconList extends FuzzySuggestModal<string> {
 	plugin: FavoritePlugin;
@@ -48,7 +49,14 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 
 	async onChooseItem(item: string): Promise<void> {
 		this.plugin.settings.icon = item;
-		setIcon(document.querySelector(".fv-select-icon-btn"), item);
+
+		setIcon(
+			document.querySelector(
+				`#${SETTINGS_ICON_BTN_ID}`
+			) as HTMLButtonElement,
+			item
+		);
+
 		await this.plugin.saveSettings();
 
 		this.plugin.reload();
