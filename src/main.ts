@@ -1,45 +1,28 @@
 import { Plugin, TFile } from "obsidian";
-import { DEFAULT_SETTINGS, FAVORITES_DATA_PATH } from "src/constants";
+import { DEFAULT_SETTINGS } from "src/constants";
 import { FavoritePluginSettings } from "src/types";
 import { createFavoriteButton } from "./lib/utils";
 import FavoritePluginSettingsTab from "./tabs/settings-tab";
 import "../styles.css";
 
 export default class FavoritePlugin extends Plugin {
+	private isEnabled = false;
+
 	settings: FavoritePluginSettings;
 	private favorites: string[] = [];
 
-	private getDataFile(): TFile {
-		return this.app.vault.getAbstractFileByPath(
-			FAVORITES_DATA_PATH
-		) as TFile;
+	getFileExplorer(): HTMLElement {
+		return this.app.workspace.containerEl.find(".nav-folder-children");
 	}
 
-	async getFavorites() {
-		new Promise((resolve, reject) => {
-			const favoritesFile = this.getDataFile();
+	onFolderExpand(e: PointerEvent) {
+		if (this.isEnabled) {
+			this.addFavoriteIconToFolder(e.currentTarget as HTMLDivElement);
+		} else {
+			const parentElement = e.currentTarget as HTMLElement;
 
-			if (favoritesFile) {
-				this.app.vault
-					.read(this.getDataFile())
-					.then((data) => {
-						this.favorites = JSON.parse(data);
-						resolve(true);
-					})
-					.catch(() => {
-						reject("Failed to load favorites.");
-					});
-			} else {
-				reject("Failed to load favorites file.");
-			}
-		});
-	}
-
-	saveFavorites() {
-		this.app.vault.modify(
-			this.getDataFile(),
-			JSON.stringify(this.favorites)
-		);
+			this.removeFavoriteIconFromChild(parentElement);
+		}
 	}
 
 	isFavorite(filePath: string): boolean {
@@ -55,7 +38,7 @@ export default class FavoritePlugin extends Plugin {
 			this.favorites.push(filePath);
 		}
 
-		this.saveFavorites();
+		this.saveSettings();
 	}
 
 	addFavoriteIconToItem(listItem: HTMLElement | Element) {
@@ -90,8 +73,6 @@ export default class FavoritePlugin extends Plugin {
 			".nav-folder, .nav-file-title"
 		);
 
-		console.log({ folderEl, listItems });
-
 		listItems.forEach((listItem) => {
 			const isAlreadyExists = listItem.find(".fav-btn");
 
@@ -100,56 +81,48 @@ export default class FavoritePlugin extends Plugin {
 			}
 
 			if (listItem.classList.contains("nav-file-title")) {
+				listItem.addClass("fav-nav-file-title");
+
 				this.addFavoriteIconToItem(listItem);
 			} else if (!listItem.classList.contains("is-collapsed")) {
 				// Becuase of empty note list on inital call
 				setTimeout(() => {
-					this.addFavoriteIconToFolder(listItem as HTMLElement);
+					this.addFavoriteIconToFolder(listItem as HTMLDivElement);
 				}, 200);
 			} else {
 				listItem.addEventListener(
 					"click",
-					(e: PointerEvent) => {
-						const treeEl = e.currentTarget as HTMLDivElement;
-						this.addFavoriteIconToFolder(treeEl);
-					},
+					this.onFolderExpand.bind(this),
 					{ once: true }
 				);
 			}
 		});
 	}
 
-	removeFavoriteIconFromItem(listItem: HTMLElement | Element) {
-		const trailingButton = listItem.querySelector("span");
-
-		trailingButton?.remove();
+	addFavoriteIcons() {
+		this.addFavoriteIconToFolder(this.getFileExplorer());
 	}
 
-	addFavoriteIcons() {
-		const fileExplorer = this.app.workspace.containerEl.find(
-			".nav-folder-children"
+	removeFavoriteIconFromChild(folderEl: HTMLElement) {
+		const listItems = folderEl.querySelectorAll(
+			".nav-folder, .nav-file-title"
 		);
 
-		this.addFavoriteIconToFolder(fileExplorer);
-
-		// if (fileExplorer) {
-		// 	const listItems = fileExplorer.querySelectorAll(".nav-file-title");
-
-		// 	listItems.forEach((listItem) =>
-		// 		this.addFavoriteIconToItem(listItem)
-		// 	);
-		// }
+		listItems.forEach((listItem) => {
+			if (listItem.classList.contains("nav-file-title")) {
+				listItem.findAll(".fav-btn").forEach((el) => el.remove());
+				listItem.removeClass("fav-nav-file-title");
+			} else {
+				this.removeFavoriteIconFromChild(listItem as HTMLDivElement);
+			}
+		});
 	}
 
 	removeFavoriteIcons() {
-		const fileExplorer = document.querySelector(".nav-folder-children");
+		const fileExplorer = this.getFileExplorer();
 
 		if (fileExplorer) {
-			const listItems = fileExplorer.querySelectorAll(".nav-file-title");
-
-			listItems.forEach((listItem) =>
-				this.removeFavoriteIconFromItem(listItem)
-			);
+			this.removeFavoriteIconFromChild(fileExplorer);
 		}
 	}
 
@@ -159,6 +132,8 @@ export default class FavoritePlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
+
+		this.favorites = this.settings.favorites;
 	}
 
 	async saveSettings() {
@@ -175,33 +150,45 @@ export default class FavoritePlugin extends Plugin {
 	}
 
 	onFileCreate(file: TFile) {
-		this.reload();
-	}
+		setTimeout(() => {
+			const listItem = this.app.workspace.containerEl.find(
+				`[data-path="${file.path}"]`
+			);
 
-	onTreeFolderExpand(event: PointerEvent) {
-		const treeEl = event.currentTarget as HTMLDivElement;
-
-		const listItems = treeEl.querySelectorAll(".nav-file .nav-file-title");
-
-		listItems.forEach((listItem) => this.addFavoriteIconToItem(listItem));
+			this.addFavoriteIconToItem(listItem);
+		}, 100);
 	}
 
 	async onload() {
-		this.app.workspace.onLayoutReady(async () => {
-			await this.getFavorites();
+		this.isEnabled = true;
 
+		this.app.workspace.onLayoutReady(async () => {
 			await this.loadSettings();
 
 			this.addFavoriteIcons();
 
-			this.app.vault.on("create", this.onFileCreate);
+			this.getFileExplorer()
+				.findAll(".nav-file-title")
+				.forEach((el) => {
+					el.classList.add("fav-nav-file-title");
+				});
+
+			this.app.vault.on("create", this.onFileCreate.bind(this));
 		});
 
 		this.addSettingTab(new FavoritePluginSettingsTab(this.app, this));
 	}
 
 	onunload() {
-		this.app.vault.off("create", this.onFileCreate);
+		this.isEnabled = false;
+
+		this.getFileExplorer()
+			.findAll(".nav-file-title")
+			.forEach((el) => {
+				el.classList.remove("fav-nav-file-title");
+			});
+
+		this.app.vault.off("create", this.onFileCreate.bind(this));
 
 		this.removeFavoriteIcons();
 	}

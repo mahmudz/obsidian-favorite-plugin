@@ -1,5 +1,4 @@
-import { FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
-import { appIcons } from "./app-icons";
+import { FuzzyMatch, FuzzySuggestModal, getIconIds, setIcon } from "obsidian";
 import { SETTINGS_ICON_BTN_ID } from "../constants";
 import FavoritePlugin from "../main";
 
@@ -25,7 +24,7 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 	}
 
 	getItems(): string[] {
-		return appIcons;
+		return getIconIds();
 	}
 
 	getItemText(item: string): string {

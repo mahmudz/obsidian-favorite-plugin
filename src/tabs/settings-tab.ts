@@ -16,9 +16,6 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h1", { text: "Favorites" });
-		containerEl.createEl("p", { text: "The missing favorites plugin" });
-
 		new Setting(containerEl)
 			.setName("Favorite Icon")
 			.setDesc("Choose your favorite icon")
@@ -51,7 +48,15 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 		const a = createEl("a");
 		a.setAttribute("href", link);
 		a.addClass("buymeacoffee-img");
-		a.innerHTML = `<img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee &emoji=&slug=mahmudz&button_colour=BD5FFF&font_colour=ffffff&font_family=Poppins&outline_colour=000000&coffee_colour=FFDD00" />`;
+
+		const img = createEl("img", {
+			attr: {
+				src: "https://img.buymeacoffee.com/button-api/?text=Buy me a coffee &emoji=&slug=mahmudz&button_colour=BD5FFF&font_colour=ffffff&font_family=Poppins&outline_colour=000000&coffee_colour=FFDD00",
+			},
+		});
+
+		a.appendChild(img);
+
 		return a;
 	}
 }
