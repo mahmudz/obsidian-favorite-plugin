@@ -6,3 +6,46 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.nav-file-title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.fav-btn {
+	visibility: hidden;
+	cursor: pointer;
+}
+
+.fav-btn:hover {
+	color: #9f9f9f;
+}
+
+.nav-file:hover .fav-btn {
+	visibility: visible;
+}
+
+.is-favorite {
+	visibility: visible;
+	color: var(--text-accent);
+}
+
+.is-favorite:hover {
+	visibility: visible;
+	color: var(--text-accent-hover);
+}
+
+.donate-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-top: 40px;
+}
+
+.fv-icon-item {
+	line-height: normal;
+	vertical-align: middle;
+	margin-right: 8px;
+}
