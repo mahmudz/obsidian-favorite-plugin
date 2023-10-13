@@ -155,6 +155,8 @@ export default class FavoritePlugin extends Plugin {
 				`[data-path="${file.path}"]`
 			);
 
+			listItem.classList.add("fav-nav-file-title");
+
 			this.addFavoriteIconToItem(listItem);
 		}, 100);
 	}
