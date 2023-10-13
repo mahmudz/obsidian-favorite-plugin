@@ -161,6 +161,16 @@ export default class FavoritePlugin extends Plugin {
 		}, 100);
 	}
 
+	onFileDelete(file: TFile) {
+		const index = this.favorites.indexOf(file.path);
+
+		if (index !== -1) {
+			this.favorites.splice(index, 1);
+
+			this.saveSettings();
+		}
+	}
+
 	async onload() {
 		this.isEnabled = true;
 
@@ -176,6 +186,8 @@ export default class FavoritePlugin extends Plugin {
 				});
 
 			this.app.vault.on("create", this.onFileCreate.bind(this));
+
+			this.app.vault.on("delete", this.onFileDelete.bind(this));
 		});
 
 		this.addSettingTab(new FavoritePluginSettingsTab(this.app, this));
@@ -191,6 +203,8 @@ export default class FavoritePlugin extends Plugin {
 			});
 
 		this.app.vault.off("create", this.onFileCreate.bind(this));
+
+		this.app.vault.off("delete", this.onFileDelete.bind(this));
 
 		this.removeFavoriteIcons();
 	}
