@@ -1,5 +1,9 @@
 # Obsidian Favorite Note Plugin
 
+<p style="text-align: center;">
+	<img src="preview.png" />
+</p>
+
 The missing Obsidian plugin to mark your note as favorite.
 
 ## What sets this plugin appart from the core [Bookmarks](https://help.obsidian.md/Plugins/Bookmarks) plugin?
