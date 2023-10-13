@@ -10,6 +10,16 @@ This plugin introduces the ability to mark individual notes as favorites directl
 
 You can activate this plugin within Obsidian by doing the following:
 
+#### Manually
+
+- Download the latest release zip file
+- Extract and put the three files (main.js, manifest.json, styles.css) to folder {{ YOUR VAULT}}/.obsidian/plugins/favorite-note
+- Open Settings > Community plugins
+- Make sure Restricted mode is off
+- Activate the plugin
+
+#### From Obsidian
+
 - Open Settings > Community plugins
 - Make sure Restricted mode is off
 - Click Browse community plugins
