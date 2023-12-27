@@ -11,6 +11,11 @@ If your plugin does not need CSS, delete this file.
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: 5px;
+}
+
+.nav-file-title-content, .nav-folder-title-content {
+	flex: 1;
 }
 
 .fav-btn {
