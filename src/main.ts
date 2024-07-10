@@ -11,8 +11,8 @@ export default class FavoritePlugin extends Plugin {
 	settings: FavoritePluginSettings;
 	private favorites: string[] = [];
 
-	getFileExplorer(): HTMLElement {
-		return this.app.workspace.containerEl.find(".nav-folder-children");
+	getFileExplorer(): HTMLElement | null {
+		return this.app.workspace.containerEl.find(".nav-files-container");
 	}
 
 	onFolderExpand(e: PointerEvent) {
@@ -100,7 +100,11 @@ export default class FavoritePlugin extends Plugin {
 	}
 
 	addFavoriteIcons() {
-		this.addFavoriteIconToFolder(this.getFileExplorer());
+		const parent = this.getFileExplorer();
+
+		if (parent) {
+			this.addFavoriteIconToFolder(parent);
+		}
 	}
 
 	removeFavoriteIconFromChild(folderEl: HTMLElement) {
@@ -180,7 +184,7 @@ export default class FavoritePlugin extends Plugin {
 			this.addFavoriteIcons();
 
 			this.getFileExplorer()
-				.findAll(".nav-file-title")
+				?.findAll(".nav-file-title")
 				.forEach((el) => {
 					el.classList.add("fav-nav-file-title");
 				});
@@ -197,7 +201,7 @@ export default class FavoritePlugin extends Plugin {
 		this.isEnabled = false;
 
 		this.getFileExplorer()
-			.findAll(".nav-file-title")
+			?.findAll(".nav-file-title")
 			.forEach((el) => {
 				el.classList.remove("fav-nav-file-title");
 			});
