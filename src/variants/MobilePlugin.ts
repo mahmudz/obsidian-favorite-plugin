@@ -103,7 +103,7 @@ export class MobilePlugin extends BasePlugin {
 			) as HTMLButtonElement;
 	}
 
-	onSidebarButtonClick() {
+	onSidebarButtonClick = () => {
 		const explorer = this.getFileExplorer();
 
 		if (!this.app.workspace.leftSplit.collapsed) {
@@ -111,35 +111,16 @@ export class MobilePlugin extends BasePlugin {
 				this.addFavoriteIconToFolder(explorer);
 			}, 50);
 		}
-	}
+	};
 
 	registerSidebarToggleEvents() {
 		const btn = this.getSidebarToggleButton();
-		btn?.addEventListener("click", this.onSidebarButtonClick.bind(this));
+		btn?.addEventListener("click", this.onSidebarButtonClick);
 	}
 
-	onload(): void {
-		this.app.workspace.onLayoutReady(() => {
-			this.addFavoriteButtonToHeader();
-
-			setTimeout(() => {
-				this.registerSidebarToggleEvents();
-			}, 200);
-
-			this.plugin.registerEvent(
-				this.app.workspace.on("active-leaf-change", (leaf) => {
-					if (!this.itemViewAlreadyHasButton()) {
-						this.addFavoriteButtonToHeader();
-					}
-
-					this.updateHeaderButtonState();
-				})
-			);
-
-			this.plugin.registerEvent(
-				this.app.vault.on("delete", this.onFileDelete.bind(this))
-			);
-		});
+	deregisterSidebarToggleEvents() {
+		const btn = this.getSidebarToggleButton();
+		btn?.removeEventListener("click", this.onSidebarButtonClick);
 	}
 
 	updateHeaderButtonState() {
@@ -186,15 +167,49 @@ export class MobilePlugin extends BasePlugin {
 		);
 	}
 
+	onload(): void {
+		this.app.workspace.on("window-open", () => {
+			console.log("open");
+		});
+
+		this.app.workspace.onLayoutReady(() => {
+			setTimeout(() => {
+				this.addFavoriteButtonToHeader();
+
+				this.registerSidebarToggleEvents();
+
+				this.onSidebarButtonClick();
+			}, 100);
+
+			this.plugin.registerEvent(
+				this.app.workspace.on("active-leaf-change", (leaf) => {
+					if (!this.itemViewAlreadyHasButton()) {
+						this.addFavoriteButtonToHeader();
+					}
+
+					this.updateHeaderButtonState();
+				})
+			);
+
+			this.plugin.registerEvent(
+				this.app.vault.on("delete", this.onFileDelete.bind(this))
+			);
+		});
+	}
+
 	reload(): void {}
 
 	destroy(): void {
 		this.isEnabled = false;
 
+		this.getHeaderFavoriteActionButton()?.remove();
+		this.deregisterSidebarToggleEvents();
+
 		this.getFileExplorer()
 			?.findAll(".nav-file-title")
 			.forEach((el) => {
 				el.classList.remove("fav-nav-file-title");
+				el.find(".mobile-fav-btn").remove();
 			});
 	}
 }
