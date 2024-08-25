@@ -20,13 +20,13 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 			.setName("Favorite Icon")
 			.setDesc("Choose your favorite icon")
 			.addButton((el) => {
-				el.setIcon(this.plugin.settings.icon);
+				el.setIcon(this.plugin.variant.settings.icon);
 
 				el.onClick(async () => {
 					new ChooseFromIconList(this.plugin, false).open();
 				});
 
-				this.plugin.saveSettings();
+				this.plugin.variant.saveSettings();
 			})
 			.controlEl.children[0].setAttr("id", SETTINGS_ICON_BTN_ID);
 

@@ -1,4 +1,4 @@
 export interface FavoritePluginSettings {
 	icon: string;
-	favorites: string[];
+	favorites: Set<string>;
 }

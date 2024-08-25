@@ -47,7 +47,7 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 	}
 
 	async onChooseItem(item: string): Promise<void> {
-		this.plugin.settings.icon = item;
+		this.plugin.variant.settings.icon = item;
 
 		setIcon(
 			document.querySelector(
@@ -56,9 +56,9 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 			item
 		);
 
-		await this.plugin.saveSettings();
+		await this.plugin.variant.saveSettings();
 
-		this.plugin.reload();
+		this.plugin.variant.reload();
 
 		setTimeout(() => {
 			dispatchEvent(new Event("print-greeting-to-console"));

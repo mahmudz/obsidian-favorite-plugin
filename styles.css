@@ -14,7 +14,8 @@ If your plugin does not need CSS, delete this file.
 	gap: 5px;
 }
 
-.nav-file-title-content, .nav-folder-title-content {
+.nav-file-title-content,
+.nav-folder-title-content {
 	flex: 1;
 }
 
@@ -23,6 +24,7 @@ If your plugin does not need CSS, delete this file.
 	cursor: pointer;
 	display: flex;
 }
+
 
 .fav-btn:hover {
 	color: #9f9f9f;
@@ -35,6 +37,16 @@ If your plugin does not need CSS, delete this file.
 
 .nav-file:hover .fav-btn {
 	visibility: visible;
+}
+
+.mobile-header-fav-idle {
+	color: var(--text-faint);
+}
+
+.mobile-fav-btn {
+	cursor: pointer;
+	display: flex;
+	visibility: hidden;
 }
 
 .is-favorite {
