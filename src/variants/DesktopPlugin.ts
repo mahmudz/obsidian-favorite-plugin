@@ -24,7 +24,8 @@ export class DesktopPlugin extends BasePlugin {
 
 		const trailingButton = createFavoriteButton(
 			this.isFavorite(filePath),
-			this.settings.icon
+			this.settings.icon,
+			this.settings.filled
 		);
 
 		trailingButton.addEventListener("click", (e: PointerEvent) => {
@@ -37,8 +38,13 @@ export class DesktopPlugin extends BasePlugin {
 
 				if (this.isFavorite(filePath)) {
 					favoriteButton.classList.add("is-favorite");
+
+					if (this.settings.filled) {
+						trailingButton.classList.add("fav-icon-filled");
+					}
 				} else {
 					favoriteButton.classList.remove("is-favorite");
+					trailingButton.classList.remove("fav-icon-filled");
 				}
 			}
 		});

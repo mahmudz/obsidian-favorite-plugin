@@ -35,6 +35,10 @@ If your plugin does not need CSS, delete this file.
 	width: 16px;
 }
 
+.fav-icon-filled svg {
+	fill: var(--text-accent);
+}
+
 .nav-file:hover .fav-btn {
 	visibility: visible;
 }

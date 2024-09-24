@@ -30,6 +30,20 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 			})
 			.controlEl.children[0].setAttr("id", SETTINGS_ICON_BTN_ID);
 
+		new Setting(containerEl)
+			.setName("Fill Icon")
+			.setDesc("If you want to fill the icon or not")
+			.addToggle((el) => {
+				el.setValue(this.plugin.variant.settings.filled);
+
+				el.onChange(async (value) => {
+					this.plugin.variant.settings.filled = value;
+
+					this.plugin.variant.saveSettings();
+					this.plugin.variant.reload();
+				});
+			});
+
 		const donationDiv = containerEl.createEl("div", {
 			cls: "donate-section",
 		});
