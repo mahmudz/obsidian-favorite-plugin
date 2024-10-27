@@ -145,7 +145,7 @@ export class DesktopPlugin extends BasePlugin {
 						.forEach((el) => {
 							el.classList.add("fav-nav-file-title");
 						});
-				}, 200);
+				}, 300);
 
 				this.app.vault.on("create", this.onFileCreate.bind(this));
 
