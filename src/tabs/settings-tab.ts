@@ -1,7 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import FavoritePlugin from "../main";
 import { ChooseFromIconList } from "src/modals/choose-icon-modal";
-import { SETTINGS_ICON_BTN_ID } from "src/constants";
 
 export default class FavoritePluginSettingsTab extends PluginSettingTab {
 	plugin: FavoritePlugin;
@@ -19,14 +18,13 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Favorite Icon")
 			.setDesc("Choose your favorite icon")
-			.addButton((el) => {
-				el.setIcon(this.plugin.variant.settings.icon);
+			.addButton((button) => {
+				button.setIcon(this.plugin.variant.settings.icon);
 
-				el.onClick(async () => {
-					new ChooseFromIconList(this.plugin, false).open();
+				button.onClick(() => {
+					new ChooseFromIconList(this.plugin, button.buttonEl).open();
 				});
-			})
-			.controlEl.children[0].setAttr("id", SETTINGS_ICON_BTN_ID);
+			});
 
 		new Setting(containerEl)
 			.setName("Fill Icon")
