@@ -3,8 +3,7 @@ import { BasePlugin } from "./BasePlugin";
 
 export class MobilePlugin extends BasePlugin {
 	createFavoriteButton(isFavorite = false): HTMLElement {
-		const trailingButton = document.createElement("span");
-		trailingButton.classList.add("mobile-fav-btn");
+		const trailingButton = createSpan({ cls: "mobile-fav-btn" });
 
 		if (isFavorite) {
 			trailingButton.classList.add("is-favorite");

@@ -32,15 +32,15 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 			.addToggle((el) => {
 				el.setValue(this.plugin.variant.settings.filled);
 
-				el.onChange(async (value) => {
+				el.onChange((value) => {
 					this.plugin.variant.settings.filled = value;
 
-					this.plugin.variant.saveSettings();
+					void this.plugin.variant.saveSettings();
 					this.plugin.variant.reload();
 				});
 			});
 
-		const donationDiv = containerEl.createEl("div", {
+		const donationDiv = containerEl.createDiv({
 			cls: "donate-section",
 		});
 

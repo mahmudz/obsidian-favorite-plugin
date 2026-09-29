@@ -98,7 +98,7 @@ export abstract class BasePlugin extends BasePluginContract {
 		if (changed) {
 			void this.saveSettings();
 			// File explorer updates its rows in the same rename turn. Sync after that.
-			window.setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				if (this.isEnabled) {
 					this.syncOpenExplorerButtons();
 				}

@@ -45,15 +45,15 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 		super.renderSuggestion(icon, iconItem);
 	}
 
-	async onChooseItem(item: string): Promise<void> {
+	onChooseItem(item: string): void {
 		this.plugin.variant.settings.icon = item;
 
 		if (this.buttonEl?.isConnected) {
 			setIcon(this.buttonEl, item);
 		}
 
-		await this.plugin.variant.saveSettings();
-
-		this.plugin.variant.reload();
+		void this.plugin.variant.saveSettings().then(() => {
+			this.plugin.variant.reload();
+		});
 	}
 }
