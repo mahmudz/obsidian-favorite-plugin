@@ -1,4 +1,4 @@
-import { ItemView, setIcon } from "obsidian";
+import { ItemView, setIcon, TFile } from "obsidian";
 import { BasePlugin } from "./BasePlugin";
 
 export class MobilePlugin extends BasePlugin {
@@ -42,9 +42,7 @@ export class MobilePlugin extends BasePlugin {
 				return;
 			}
 
-			void this.toggleFavorite(path);
-			this.syncButtonsForPath(path);
-			this.updateHeaderButtonState();
+			this.togglePath(path);
 		});
 
 		listItem.addClass("fav-nav-file-title");
@@ -100,9 +98,39 @@ export class MobilePlugin extends BasePlugin {
 			return;
 		}
 
+		this.togglePath(filePath);
+	}
+
+	private togglePath(filePath: string) {
 		void this.toggleFavorite(filePath);
 		this.syncButtonsForPath(filePath);
-		this.updateHeaderButtonState();
+
+		if (this.app.workspace.getActiveFile()?.path === filePath) {
+			this.updateHeaderButtonState();
+		}
+	}
+
+	private registerFileMenu() {
+		this.plugin.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				if (!(file instanceof TFile)) {
+					return;
+				}
+
+				const favorite = this.isFavorite(file.path);
+
+				menu.addItem((item) => {
+					item
+						.setTitle(favorite ? "Unmark as favorite" : "Mark as favorite")
+						.setIcon(this.settings.icon)
+						.setChecked(favorite)
+						.setSection("action")
+						.onClick(() => {
+							this.togglePath(file.path);
+						});
+				});
+			})
+		);
 	}
 
 	addFavoriteButtonToHeader() {
@@ -133,6 +161,7 @@ export class MobilePlugin extends BasePlugin {
 			}
 
 			this.registerVaultEvents();
+			this.registerFileMenu();
 
 			this.app.workspace.onLayoutReady(() => {
 				this.addFavoriteButtonToHeader();
