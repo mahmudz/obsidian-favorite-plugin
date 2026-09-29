@@ -25,8 +25,6 @@ export default class FavoritePluginSettingsTab extends PluginSettingTab {
 				el.onClick(async () => {
 					new ChooseFromIconList(this.plugin, false).open();
 				});
-
-				this.plugin.variant.saveSettings();
 			})
 			.controlEl.children[0].setAttr("id", SETTINGS_ICON_BTN_ID);
 

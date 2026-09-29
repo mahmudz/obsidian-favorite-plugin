@@ -59,9 +59,5 @@ export class ChooseFromIconList extends FuzzySuggestModal<string> {
 		await this.plugin.variant.saveSettings();
 
 		this.plugin.variant.reload();
-
-		setTimeout(() => {
-			dispatchEvent(new Event("print-greeting-to-console"));
-		}, 100);
 	}
 }

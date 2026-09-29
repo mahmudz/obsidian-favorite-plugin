@@ -17,12 +17,14 @@ If your plugin does not need CSS, delete this file.
 .nav-file-title-content,
 .nav-folder-title-content {
 	flex: 1;
+	min-width: 0;
 }
 
 .fav-btn {
 	visibility: hidden;
 	cursor: pointer;
 	display: flex;
+	flex-shrink: 0;
 }
 
 
@@ -50,7 +52,9 @@ If your plugin does not need CSS, delete this file.
 .mobile-fav-btn {
 	cursor: pointer;
 	display: flex;
-	visibility: hidden;
+	flex-shrink: 0;
+	visibility: visible;
+	color: var(--text-faint);
 }
 
 .is-favorite {

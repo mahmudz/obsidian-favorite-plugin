@@ -1,40 +1,17 @@
-import { ItemView, Platform, setIcon } from "obsidian";
+import { ItemView, setIcon } from "obsidian";
 import { BasePlugin } from "./BasePlugin";
 
 export class MobilePlugin extends BasePlugin {
-	getFileListElements(parentEl: Element) {
-		return parentEl.querySelectorAll(".nav-folder, .nav-file-title");
-	}
-
-	getFileExplorer(): HTMLElement {
-		return this.app.workspace.getLeavesOfType("file-explorer").pop()?.view
-			.containerEl as HTMLElement;
-	}
-
-	removeFavoriteIconFromChild(folderEl: Element) {
-		const listItems = this.getFileListElements(folderEl);
-
-		listItems.forEach((listItem) => {
-			if (listItem.classList.contains("nav-file-title")) {
-				listItem
-					.findAll(".mobile-fav-btn")
-					.forEach((el) => el.remove());
-
-				listItem.removeClass("fav-nav-file-title");
-			} else {
-				this.removeFavoriteIconFromChild(listItem);
-			}
-		});
-	}
-
 	createFavoriteButton(isFavorite = false): HTMLElement {
 		const trailingButton = document.createElement("span");
 		trailingButton.classList.add("mobile-fav-btn");
 
 		if (isFavorite) {
 			trailingButton.classList.add("is-favorite");
-		} else {
-			trailingButton.classList.remove("is-favorite");
+
+			if (this.settings.filled) {
+				trailingButton.classList.add("fav-icon-filled");
+			}
 		}
 
 		setIcon(trailingButton, this.settings.icon);
@@ -42,39 +19,36 @@ export class MobilePlugin extends BasePlugin {
 		return trailingButton;
 	}
 
-	addFavoriteIconToItem(listItem: Element) {
-		const favButton = listItem.find(".mobile-fav-btn");
-
-		const filePath = listItem.getAttribute("data-path") ?? "";
-
-		const favorite = this.isFavorite(filePath);
-
-		if (favButton) {
-			if (favorite) {
-				favButton.classList.add("is-favorite");
-			} else {
-				favButton.classList.remove("is-favorite");
-			}
-
+	addFavoriteIconToItem(listItem: HTMLElement) {
+		if (listItem.querySelector(".mobile-fav-btn")) {
 			return;
 		}
 
-		listItem.addClass("fav-nav-file-title");
-		const trailingButton = this.createFavoriteButton(favorite);
+		const filePath = listItem.getAttribute("data-path");
 
-		listItem.appendChild(trailingButton);
-	}
+		if (!filePath) {
+			return;
+		}
 
-	addFavoriteIconToFolder(folderEl: Element) {
-		const listItems = this.getFileListElements(folderEl);
+		const trailingButton = this.createFavoriteButton(this.isFavorite(filePath));
 
-		listItems.forEach((listItem) => {
-			if (listItem.classList.contains("nav-file-title")) {
-				this.addFavoriteIconToItem(listItem);
-			} else {
-				this.addFavoriteIconToFolder(listItem);
+		trailingButton.addEventListener("click", (event: MouseEvent) => {
+			event.preventDefault();
+			event.stopPropagation();
+
+			const path = listItem.getAttribute("data-path");
+
+			if (!path) {
+				return;
 			}
+
+			void this.toggleFavorite(path);
+			this.syncButtonsForPath(path);
+			this.updateHeaderButtonState();
 		});
+
+		listItem.addClass("fav-nav-file-title");
+		listItem.appendChild(trailingButton);
 	}
 
 	getHeaderFavoriteActionButton() {
@@ -89,51 +63,34 @@ export class MobilePlugin extends BasePlugin {
 		return this.getHeaderFavoriteActionButton() != null;
 	}
 
-	getSidebarToggleButton() {
-		if (Platform.isTablet) {
-			return this.app.workspace.containerEl?.querySelector(
-				".sidebar-toggle-button"
-			);
-		}
-
-		return this.app.workspace
-			.getActiveViewOfType(ItemView)
-			?.containerEl?.querySelector(
-				'button[aria-label="Expand"]'
-			) as HTMLButtonElement;
-	}
-
-	onSidebarButtonClick = () => {
-		const explorer = this.getFileExplorer();
-
-		if (!this.app.workspace.leftSplit.collapsed) {
-			setTimeout(() => {
-				this.addFavoriteIconToFolder(explorer);
-			}, 50);
-		}
-	};
-
-	registerSidebarToggleEvents() {
-		const btn = this.getSidebarToggleButton();
-		btn?.addEventListener("click", this.onSidebarButtonClick);
-	}
-
-	deregisterSidebarToggleEvents() {
-		const btn = this.getSidebarToggleButton();
-		btn?.removeEventListener("click", this.onSidebarButtonClick);
-	}
-
 	updateHeaderButtonState() {
-		const filePath = this.app.workspace.getActiveFile()?.path as string;
+		const filePath = this.app.workspace.getActiveFile()?.path;
 		const btn = this.getHeaderFavoriteActionButton();
+		const favorite = filePath ? this.isFavorite(filePath) : false;
 
-		if (this.isFavorite(filePath)) {
+		if (favorite) {
 			btn?.classList.remove("mobile-header-fav-idle");
 			btn?.classList.add("is-favorite");
 		} else {
 			btn?.classList.remove("is-favorite");
 			btn?.classList.add("mobile-header-fav-idle");
 		}
+
+		if (!filePath) {
+			return;
+		}
+
+		this.forEachFileTitle((title) => {
+			if (title.getAttribute("data-path") !== filePath) {
+				return;
+			}
+
+			const button = title.querySelector(".mobile-fav-btn");
+
+			if (button instanceof HTMLElement) {
+				this.applyFavoriteState(button, filePath);
+			}
+		});
 	}
 
 	onHeaderButtonClick() {
@@ -143,8 +100,8 @@ export class MobilePlugin extends BasePlugin {
 			return;
 		}
 
-		this.toggleFavorite(filePath);
-
+		void this.toggleFavorite(filePath);
+		this.syncButtonsForPath(filePath);
 		this.updateHeaderButtonState();
 	}
 
@@ -168,21 +125,28 @@ export class MobilePlugin extends BasePlugin {
 	}
 
 	onload(): void {
-		this.app.workspace.on("window-open", () => {
-			console.log("open");
-		});
+		this.isEnabled = true;
 
-		this.app.workspace.onLayoutReady(() => {
-			setTimeout(() => {
+		void this.ready.then(() => {
+			if (!this.isEnabled) {
+				return;
+			}
+
+			this.registerVaultEvents();
+
+			this.app.workspace.onLayoutReady(() => {
 				this.addFavoriteButtonToHeader();
-
-				this.registerSidebarToggleEvents();
-
-				this.onSidebarButtonClick();
-			}, 100);
+				this.decorateOpenExplorers();
+			});
 
 			this.plugin.registerEvent(
-				this.app.workspace.on("active-leaf-change", (leaf) => {
+				this.app.workspace.on("layout-change", () => {
+					this.decorateOpenExplorers();
+				})
+			);
+
+			this.plugin.registerEvent(
+				this.app.workspace.on("active-leaf-change", () => {
 					if (!this.itemViewAlreadyHasButton()) {
 						this.addFavoriteButtonToHeader();
 					}
@@ -190,26 +154,38 @@ export class MobilePlugin extends BasePlugin {
 					this.updateHeaderButtonState();
 				})
 			);
-
-			this.plugin.registerEvent(
-				this.app.vault.on("delete", this.onFileDelete.bind(this))
-			);
+		}).catch((error) => {
+			console.error("Favorite Note failed to load settings", error);
 		});
 	}
 
-	reload(): void {}
+	reload(): void {
+		this.forEachFileTitle((title) => {
+			const button = title.querySelector(".mobile-fav-btn");
+
+			if (!(button instanceof HTMLElement)) {
+				return;
+			}
+
+			this.applyFavoriteState(
+				button,
+				title.getAttribute("data-path") ?? "",
+				true
+			);
+		});
+
+		const header = this.getHeaderFavoriteActionButton();
+
+		if (header instanceof HTMLElement) {
+			setIcon(header, this.settings.icon);
+		}
+
+		this.decorateOpenExplorers();
+	}
 
 	destroy(): void {
 		this.isEnabled = false;
-
+		this.clearDecorations(".mobile-fav-btn");
 		this.getHeaderFavoriteActionButton()?.remove();
-		this.deregisterSidebarToggleEvents();
-
-		this.getFileExplorer()
-			?.findAll(".nav-file-title")
-			.forEach((el) => {
-				el.classList.remove("fav-nav-file-title");
-				el.find(".mobile-fav-btn").remove();
-			});
 	}
 }
