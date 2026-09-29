@@ -1,4 +1,4 @@
-import { ItemView, setIcon, TFile } from "obsidian";
+import { FileView, setIcon, TFile } from "obsidian";
 import { BasePlugin } from "./BasePlugin";
 
 export class MobilePlugin extends BasePlugin {
@@ -49,21 +49,30 @@ export class MobilePlugin extends BasePlugin {
 		listItem.appendChild(trailingButton);
 	}
 
-	getHeaderFavoriteActionButton() {
-		const itemView = this.app.workspace.getActiveViewOfType(ItemView);
+	getHeaderFavoriteButton() {
+		const view = this.app.workspace.getActiveViewOfType(FileView);
 
-		return itemView?.containerEl.querySelector(
-			'.clickable-icon.view-action[aria-label="Favorite"]'
-		);
-	}
+		if (!view) {
+			return null;
+		}
 
-	itemViewAlreadyHasButton() {
-		return this.getHeaderFavoriteActionButton() != null;
+		const buttons = Array.from(
+			view.containerEl.querySelectorAll(
+				".mobile-header-fav, .view-action[aria-label='Favorite']"
+			)
+		).filter((el): el is HTMLElement => el instanceof HTMLElement);
+
+		buttons.slice(1).forEach((button) => button.remove());
+
+		const button = buttons[0];
+		button?.addClass("mobile-header-fav");
+
+		return button ?? null;
 	}
 
 	updateHeaderButtonState() {
 		const filePath = this.app.workspace.getActiveFile()?.path;
-		const btn = this.getHeaderFavoriteActionButton();
+		const btn = this.getHeaderFavoriteButton();
 		const favorite = filePath ? this.isFavorite(filePath) : false;
 
 		if (favorite) {
@@ -134,20 +143,24 @@ export class MobilePlugin extends BasePlugin {
 	}
 
 	addFavoriteButtonToHeader() {
-		const filePath = this.app.workspace.getActiveFile()?.path;
+		const view = this.app.workspace.getActiveViewOfType(FileView);
+		const filePath = view?.file?.path;
 
-		if (!filePath) {
+		if (!view || !filePath) {
 			return;
 		}
 
-		const itemView = this.app.workspace.getActiveViewOfType(ItemView);
-		const action = itemView?.addAction(
-			this.settings.icon,
-			"Favorite",
-			this.onHeaderButtonClick.bind(this)
-		);
+		if (this.getHeaderFavoriteButton()) {
+			this.updateHeaderButtonState();
+			return;
+		}
 
-		action?.classList.add(
+		const action = view.addAction(this.settings.icon, "Favorite", () => {
+			this.onHeaderButtonClick();
+		});
+
+		action.addClass("mobile-header-fav");
+		action.classList.add(
 			this.isFavorite(filePath) ? "is-favorite" : "mobile-header-fav-idle"
 		);
 	}
@@ -176,11 +189,7 @@ export class MobilePlugin extends BasePlugin {
 
 			this.plugin.registerEvent(
 				this.app.workspace.on("active-leaf-change", () => {
-					if (!this.itemViewAlreadyHasButton()) {
-						this.addFavoriteButtonToHeader();
-					}
-
-					this.updateHeaderButtonState();
+					this.addFavoriteButtonToHeader();
 				})
 			);
 		}).catch((error) => {
@@ -203,7 +212,7 @@ export class MobilePlugin extends BasePlugin {
 			);
 		});
 
-		const header = this.getHeaderFavoriteActionButton();
+		const header = this.getHeaderFavoriteButton();
 
 		if (header instanceof HTMLElement) {
 			setIcon(header, this.settings.icon);
@@ -215,6 +224,10 @@ export class MobilePlugin extends BasePlugin {
 	destroy(): void {
 		this.isEnabled = false;
 		this.clearDecorations(".mobile-fav-btn");
-		this.getHeaderFavoriteActionButton()?.remove();
+		this.app.workspace.containerEl
+			.querySelectorAll(
+				".mobile-header-fav, .view-header .view-action[aria-label='Favorite']"
+			)
+			.forEach((button) => button.remove());
 	}
 }
